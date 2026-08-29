@@ -17,6 +17,7 @@ Follow these steps:
 1. Determine the ticket input source:
    - **Direct input mode (default when ticket text is provided):** Use the ticket content shared by the user in the prompt/chat.
    - **Jira mode (optional):** If the user provides a Jira id/key, or asks to use Jira (including references like "the one in progress"), use Jira MCP to fetch the ticket details.
+   - **GitHub mode (optional):** If the user provides a GitHub id/key, or asks to use GitHub (including references like "the one in progress"), use GitHub MCP to fetch the ticket details.
 2. Act as a product expert with technical knowledge.
 3. Understand the problem described in the ticket.
 4. Decide whether or not the User Story is completely detailed according to product best practices. Validate that it includes:
@@ -31,11 +32,11 @@ Follow these steps:
 6. Output format must always include:
    - `## Original`
    - `## Enhanced`
-7. Jira write-back is optional and only applies in Jira mode:
-   - Update the Jira ticket by appending the enhanced content after the original content, with clear `h2` sections `[original]` and `[enhanced]` and readable formatting (lists/code snippets when useful).
-   - If ticket status is `To refine`, move it to `Pending refinement validation`.
-
+7. Jira or GitHub write-back is optional and only applies in Jira mode or GitHub mode:
+   - Update the Jira or GitHub ticket by appending the enhanced content after the original content, with clear `h2` sections `[original]` and `[enhanced]` and readable formatting (lists/code snippets when useful).
+   - In Jira, if ticket status is `To refine`, move it to `Pending refinement validation`.
+   - In GitHub, if ticket status is `Backlog`, move it to `Refined Ready refinement validation`.
 ## Notes
 
-- Do not require Jira when the user already provided full ticket content directly.
-- If input is ambiguous (for example, user gives a short reference without content), ask whether to resolve via Jira or request the full ticket text.
+- Do not require Jira or GitHub when the user already provided full ticket content directly.
+- If input is ambiguous (for example, user gives a short reference without content), ask whether to resolve via Jira/GitHub or request the full ticket text.
