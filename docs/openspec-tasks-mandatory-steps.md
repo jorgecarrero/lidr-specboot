@@ -246,11 +246,11 @@ Before finalizing any `tasks.md` file, verify:
 ## 5. When This Applies
 
 This rule applies when:
-- Creating `tasks.md` via `/opsx:ff` (fast-forward) or `openspec-ff-change` skill
-- Creating `tasks.md` via `/opsx:continue` (continue change) or `openspec-continue-change` skill
+- Creating `tasks.md` via the `openspec-ff-change` skill (fast-forward)
+- Creating `tasks.md` via the `openspec-continue-change` skill (continue change)
 - Updating existing `tasks.md` files
 - Any task creation that involves backend changes
-- Implementing tasks from `tasks.md` via `/opsx:apply` or `openspec-apply-change` skill - the agent must execute manual tests
+- Implementing tasks from `tasks.md` via the `openspec-apply-change` skill - the agent must execute manual tests
 
 ## 6. Example Structure
 
@@ -299,7 +299,7 @@ This rule applies when:
 
 ## 7. Agent Execution Requirements
 
-**CRITICAL**: When implementing tasks from `tasks.md` (via `openspec-apply-change` skill or `/opsx:apply` command), the coding agent MUST:
+**CRITICAL**: When implementing tasks from `tasks.md` (via the `openspec-apply-change` skill), the coding agent MUST:
 
 1. **Execute All Manual Tests**: Never ask the user to run curl commands or E2E tests. The agent must:
    - Start servers if needed (backend, frontend)
