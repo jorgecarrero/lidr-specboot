@@ -2,7 +2,7 @@
 name: using-git-worktrees
 description: Use when starting feature work that needs isolation from current workspace or before executing implementation plans - ensures an isolated workspace exists, with a change's worktree in the repository's .worktrees/ folder
 author: LIDR.co
-version: 1.1.2
+version: 1.1.3
 ---
 
 # Using Git Worktrees
@@ -143,7 +143,7 @@ fi
 
 ### 1b. Native Worktree Tools for an Agent's Own Worktree
 
-Some agents have a native worktree tool: a tool with a name like `EnterWorktree`, a `/worktree` command, or a `--worktree` flag. Use one only for an agent's own short-lived worktree, such as the isolated copy a subagent works in, never for a change's worktree. The tool picks that worktree's folder. Remove it with the same tool when that tool can remove it; otherwise remove it with git from the main checkout once its work is integrated or discarded (Step 5.3).
+Some agents have a native worktree tool: a tool with a name like `EnterWorktree`, a `/worktree` command, or a `--worktree` flag. Use one only for an agent's own short-lived worktree, such as the isolated copy a subagent works in, never for a change's worktree. The tool picks that worktree's folder. Remove it with the same tool when that tool can remove it; otherwise remove it with git once its work is integrated or discarded (Step 5.3).
 
 ## Step 3: Project Setup
 
@@ -197,7 +197,7 @@ GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
 GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 ```
 
-- **If `GIT_DIR == GIT_COMMON`:** You were never in a linked worktree (Step 0 sent you straight to Step 3). There is nothing to clean up — skip Step 5 entirely. (To remove a native tool's worktree that you are not inside, such as a subagent's isolated copy, from the main checkout, use Step 5.3.)
+- **If `GIT_DIR == GIT_COMMON`:** You were never in a linked worktree (Step 0 sent you straight to Step 3). There is nothing to clean up — skip Step 5 entirely. (To remove a worktree you are not inside, such as a change's worktree after integration or a subagent's isolated copy, `cd` into it and start Step 5 again.)
 - **If `GIT_DIR != GIT_COMMON`:** You are inside a linked worktree. Continue with cleanup.
 
 ### 5.1 Verify Work Is Saved
@@ -220,7 +220,7 @@ BRANCH_NAME=$(git branch --show-current)
 
 ### 5.2 Git Worktree Cleanup
 
-Use this for a worktree made with `git worktree add` (Step 1a), such as a change's worktree.
+Use this for a worktree made with `git worktree add` (Step 1a), such as a change's worktree, and for a native tool's worktree that the tool cannot remove (Step 5.3).
 
 ```bash
 # 1. Move out of the worktree before deleting it
@@ -248,16 +248,7 @@ git worktree prune
 
 If a native worktree tool made the worktree (Step 1b), remove it with the same tool when that tool can remove it. The tool cleans up its directory, branch, and harness state consistently. Some tools act only on worktrees they made in the same session.
 
-A tool may not be able to remove its worktree: a worktree from an earlier session, or a subagent's isolated copy that kept changes. Once that worktree's work is integrated or discarded, remove it with git from the main checkout, after the same checks as 5.1:
-
-```bash
-WT_PATH=<the worktree's path, as git worktree list prints it>
-WT_BRANCH=$(git -C "$WT_PATH" branch --show-current)
-git -C "$WT_PATH" status --porcelain       # Must be empty
-git -C "$WT_PATH" log @{u}.. 2>/dev/null   # Must be empty
-git worktree remove "$WT_PATH"
-git branch -d "$WT_BRANCH"                 # refuses if unmerged: a discarded branch needs -D, with user confirmation
-```
+A tool may not be able to remove its worktree: a worktree from an earlier session, or a subagent's isolated copy that kept changes. Once that worktree's work is integrated or discarded, remove it with git: `cd` into it and follow 5.1 and 5.2.
 
 ### 5.4 Verify Cleanup
 
@@ -291,7 +282,7 @@ Main checkout left untouched
 | Never created a worktree | Skip Step 5 |
 | Uncommitted/unpushed changes at cleanup | Stop and ask user |
 | Worktree made with git | `git worktree remove` (Step 5.2) |
-| Worktree made by a native tool | Remove it with the same tool when it can; otherwise with git from the main checkout, once its work is integrated or discarded (Step 5.3) |
+| Worktree made by a native tool | Remove it with the same tool when it can; otherwise with git from inside it, once its work is integrated or discarded (Steps 5.1 to 5.3) |
 | Worktree directory deleted manually | `git worktree prune` |
 | Clone Claude behavior into the worktree | Copy `.claude/settings*.json` from `SOURCE_ROOT` (Step 1a) |
 | Repo uses `.claude` symlinks | Copy JSON only is not enough—recreate symlinks or paths |
@@ -336,7 +327,7 @@ Main checkout left untouched
 ### Mixing native and manual cleanup
 
 - **Problem:** Running `git worktree remove` on a worktree that its native tool can still remove leaves phantom harness state
-- **Fix:** Remove a worktree with the tool that made it while that tool can; a native tool's worktree that the tool cannot remove is removed with git from the main checkout once its work is integrated or discarded (Step 5.3)
+- **Fix:** Remove a worktree with the tool that made it while that tool can; a native tool's worktree that the tool cannot remove is removed with git from inside it, once its work is integrated or discarded (Steps 5.1 to 5.3)
 
 ### Copying Claude settings from the wrong directory
 
